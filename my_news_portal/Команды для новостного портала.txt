@@ -1,0 +1,91 @@
+#Подготовка
+
+from news.models import *
+-------------------------------------------------
+#Создать двух пользователей (с помощью метода User.objects.create_user('username')).
+
+u1 = User.objects.create_user(username='Victor')
+u2 = User.objects.create_user(username='Vladimir')
+-------------------------------------------------
+#Создать два объекта модели Author, связанные с пользователями.
+
+a1 = Author.objects.create(authorUser=u1)
+a2 = Author.objects.create(authorUser=u2)
+-------------------------------------------------
+#Добавить 4 категории в модель Category.
+
+Category.objects.create(name='IT')
+Category.objects.create(name='Sport')
+Category.objects.create(name='Medicine')
+Category.objects.create(name='Politics')
+-------------------------------------------------
+#Добавить 2 статьи и 1 новость.
+
+Post.objects.create(author=a1, categoryType='NW', title='first_news_title', text='first_news_text')
+Post.objects.create(author=a2, categoryType='AR', title='first_article_title', text='first_article_text')
+Post.objects.create(author=a1, categoryType='AR', title='second_article_title', text='second_article_text')
+-------------------------------------------------
+#Присвоить им категории (как минимум в одной статье/новости должно быть не меньше 2 категорий)
+
+Post.objects.get(id=1).postCategory.add(Category.objects.get(id=1))
+Post.objects.get(id=1).postCategory.add(Category.objects.get(id=3))
+Post.objects.get(id=2).postCategory.add(Category.objects.get(id=2))
+Post.objects.get(id=3).postCategory.add(Category.objects.get(id=4))
+--------------------------------------------------
+#Создать как минимум 4 комментария к разным объектам модели Post (в каждом объекте должен быть как минимум один комментарий).
+
+Comment.objects.create(commentPost=Post.objects.get(id=1), commentUser=u2, text='comment_to_first_news')
+Comment.objects.create(commentPost=Post.objects.get(id=2), commentUser=Author.objects.get(id=1).authorUser, text='comment_to_first_article')
+Comment.objects.create(commentPost=Post.objects.get(id=1), commentUser=u1, text='comment_to_first_news')
+Comment.objects.create(commentPost=Post.objects.get(id=3), commentUser=User.objects.get(id=2), text='comment_to_second_article')
+--------------------------------------------------
+#Применяя функции like() и dislike() к статьям/новостям и комментариям, скорректировать рейтинги этих объектов.
+
+Post.objects.get(id=1).like()
+Post.objects.get(id=2).like()
+Post.objects.filter(author=a1)[0].like()
+Post.objects.get(id=1).dislike()
+Post.objects.get(id=2).dislike()
+Post.objects.filter(postCategory=4)[0].dislike()
+Comment.objects.get(id=1).like()
+Comment.objects.get(id=2).dislike()
+Comment.objects.filter(author=Author.objects.get(id=2).authorUser)[1].dislike()
+
+#Знаю, что нарушаю принцип KISS, но поиграться никто не мешает.
+
+--------------------------------------------------
+#Обновить рейтинги пользователей.
+
+a1.update_rating()
+a1.ratingAuthor
+a2.update_rating()
+a2.ratingAuthor
+--------------------------------------------------
+#Вывести username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
+
+a = Author.objects.order_by('-rating')[:1]
+for i in a:
+    i.rating
+    i.authorUser.username   
+--------------------------------------------------
+#Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
+
+bp = Post.objects.order_by('-rating')[:1]
+for i in bp:
+    bp.dateCreation
+    bp.author.authorUser.username
+    bp.rating
+    bp.title
+    bp.preview()
+--------------------------------------------------
+#Вывести все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
+
+bc = Comment.objects.filter(commentPost=bp)
+for i in bc:
+    i.dateCreation
+    i.commentUser
+    i.rating
+    i.text
+    '--------------'
+
+
